@@ -68,6 +68,14 @@ sudo usermod -aG docker {SYSTEM USER ON UBUNTU}
 sudo systemctl restart jenkins
 sudo docker version
 ```
+for docker compose if need
+```
+# Installe Docker Compose si ce n'est pas déjà fait
+if ! [ -x "$(command -v docker-compose)" ]; then
+curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+fi
+```
 
 # Step - 4 : Create Jenkins Job #
 
@@ -110,6 +118,36 @@ pipeline {
                 sh 'docker stop img'
                 sh 'docker rm img'
                 sh 'docker run -d -p 9090:8080 --name img img'
+            }
+        }
+
+    }
+
+}
+```
+with docker compose
+```
+pipeline {
+
+    agent any
+
+    stages {
+
+        stage('git clone'){
+            steps{
+                git 'https://github.com/{USER}/{REPO}.git'
+            }
+        }
+
+        stage('Stop old instances') {
+            steps {
+                sh 'docker-compose down'
+            }
+        }
+
+        stage('Build and Deploy') {
+            steps {
+                sh 'docker-compose up --build -d'
             }
         }
 
